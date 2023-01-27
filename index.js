@@ -11,17 +11,17 @@ app.use(express.json());
 let categories = [
   {
     id: v4(),
-    item: "Улс төр",
+    name: "Улс төр",
   },
 
   {
     id: v4(),
-    item: "Спорт",
+    name: "Спорт",
   },
 
   {
     id: v4(),
-    item: "Эрүүл мэнд",
+    name: "Эрүүл мэнд",
   },
 ];
 
