@@ -9,23 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-let categories = [
-  {
-    id: v4(),
-    name: "Улс төр",
-  },
-
-  {
-    id: v4(),
-    name: "Спорт",
-  },
-
-  {
-    id: v4(),
-    name: "Эрүүл мэнд",
-  },
-];
-
 function readCategories() {
   const content = fs.readFileSync("categories.json");
   const categories = JSON.parse(content);
@@ -33,8 +16,16 @@ function readCategories() {
 }
 
 app.get("/categories", (req, res) => {
+  const { q } = req.query;
   const categories = readCategories();
-  res.json(categories);
+  if (q) {
+    const filteredList = categories.filter((category) =>
+      category.name.toLowerCase().includes(q.toLowerCase())
+    );
+    res.json(filteredList);
+  } else {
+    res.json(categories);
+  }
 });
 
 app.get("/categories/:id", (req, res) => {
