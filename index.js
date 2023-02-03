@@ -15,6 +15,12 @@ function readCategories() {
   return categories;
 }
 
+function readArticles() {
+  const content = fs.readFileSync("articles.json");
+  const articles = JSON.parse(content);
+  return articles;
+}
+
 app.get("/categories", (req, res) => {
   const { q } = req.query;
   const categories = readCategories();
@@ -44,7 +50,7 @@ app.post("/categories", (req, res) => {
   const { name } = req.body;
   const newCategory = { id: v4(), name: name };
   const categories = readCategories();
-  categories.unshift(newCategory);
+  categories.push(newCategory);
   fs.writeFileSync("categories.json", JSON.stringify(categories));
   res.sendStatus(201);
 });
@@ -76,31 +82,54 @@ app.put("/categories/:id", (req, res) => {
   }
 });
 
-///
-
-app.get("/user/save", (req, res) => {
-  const newUser = [
-    {
-      name: "Sarnai",
-      id: 1,
-    },
-  ];
-  fs.writeFileSync("data.json", JSON.stringify(newUser));
-  res.json(["success"]);
+app.post("/articles", (req, res) => {
+  const { title, categoryId, text } = req.body;
+  const newArticles = {
+    id: v4(),
+    title: title,
+    text: text,
+    categoryId: categoryId,
+  };
+  const articles = readArticles();
+  articles.unshift(newArticles);
+  fs.writeFileSync("articles.json", JSON.stringify(articles));
+  res.sendStatus(201);
 });
 
-app.get("/user/read", (req, res) => {
-  const content = fs.readFileSync("data.json");
-  res.json(JSON.parse(content));
+app.get("/articles/:id", (req, res) => {
+  const { id } = req.params;
+  const articles = readArticles();
+  const one = articles.find((article) => article.id === id);
+  if (one) {
+    res.json(one);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
-app.get("/user/update", (req, res) => {
-  const content = fs.readFileSync("data.json");
-  const users = JSON.parse(content);
-  users.push({ name: "Bold", id: 2 });
-  fs.writeFileSync("data.json", JSON.stringify(users));
-  res.json({});
-});
+// app.get("/user/save", (req, res) => {
+//   const newUser = [
+//     {
+//       name: "Sarnai",
+//       id: 1,
+//     },
+//   ];
+//   fs.writeFileSync("data.json", JSON.stringify(newUser));
+//   res.json(["success"]);
+// });
+
+// app.get("/user/read", (req, res) => {
+//   const content = fs.readFileSync("data.json");
+//   res.json(JSON.parse(content));
+// });
+
+// app.get("/user/update", (req, res) => {
+//   const content = fs.readFileSync("data.json");
+//   const users = JSON.parse(content);
+//   users.push({ name: "Bold", id: 2 });
+//   fs.writeFileSync("data.json", JSON.stringify(users));
+//   res.json({});
+// });
 
 app.listen(port, () => {
   console.log("App is listening at port", port);
