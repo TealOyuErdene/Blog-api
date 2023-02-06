@@ -100,6 +100,11 @@ app.get("/articles/:id", (req, res) => {
   const { id } = req.params;
   const articles = readArticles();
   const one = articles.find((article) => article.id === id);
+
+  const categories = readCategories();
+  let category = categories.find((category) => category.id === one.categoryId);
+  one.category = category;
+  console.log(one);
   if (one) {
     res.json(one);
   } else {

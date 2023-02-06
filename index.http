@@ -19,3 +19,5 @@ content-type: application/json
 {
     "name": "Нийгэм"
 }
+###
+GET http://localhost:8000/articles/bcfafb92-fa5d-47ca-96ae-c2f902178d46
