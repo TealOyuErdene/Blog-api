@@ -82,18 +82,26 @@ app.put("/categories/:id", (req, res) => {
   }
 });
 
+app.get("/articles", (req, res) => {
+  const articles = readArticles();
+  res.json(articles);
+  console.log(articles);
+});
+
 app.post("/articles", (req, res) => {
-  const { title, categoryId, text } = req.body;
+  const { title, categoryId, text, image } = req.body;
   const newArticles = {
     id: v4(),
     title: title,
     text: text,
     categoryId: categoryId,
+    image: image,
   };
   const articles = readArticles();
   articles.unshift(newArticles);
   fs.writeFileSync("articles.json", JSON.stringify(articles));
   res.sendStatus(201);
+  console.log(articles.image);
 });
 
 app.get("/articles/:id", (req, res) => {
@@ -104,7 +112,6 @@ app.get("/articles/:id", (req, res) => {
   const categories = readCategories();
   let category = categories.find((category) => category.id === one.categoryId);
   one.category = category;
-  console.log(one);
   if (one) {
     res.json(one);
   } else {
