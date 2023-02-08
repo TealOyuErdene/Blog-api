@@ -85,7 +85,6 @@ app.put("/categories/:id", (req, res) => {
 app.get("/articles", (req, res) => {
   const articles = readArticles();
   res.json(articles);
-  console.log(articles);
 });
 
 app.post("/articles", (req, res) => {
@@ -108,7 +107,6 @@ app.get("/articles/:id", (req, res) => {
   const { id } = req.params;
   const articles = readArticles();
   const one = articles.find((article) => article.id === id);
-
   const categories = readCategories();
   let category = categories.find((category) => category.id === one.categoryId);
   one.category = category;
