@@ -15,12 +15,6 @@ function readCategories() {
   return categories;
 }
 
-function readArticles() {
-  const content = fs.readFileSync("articles.json");
-  const articles = JSON.parse(content);
-  return articles;
-}
-
 app.get("/categories", (req, res) => {
   const { q } = req.query;
   const categories = readCategories();
@@ -82,6 +76,14 @@ app.put("/categories/:id", (req, res) => {
   }
 });
 
+///......................................///
+
+function readArticles() {
+  const content = fs.readFileSync("articles.json");
+  const articles = JSON.parse(content);
+  return articles;
+}
+
 app.get("/articles", (req, res) => {
   const articles = readArticles();
   res.json(articles);
@@ -115,7 +117,10 @@ app.get("/articles/:id", (req, res) => {
   } else {
     res.sendStatus(404);
   }
+  console.log(one);
 });
+
+app.get("/articles/:categoryId", (req, res) => {});
 
 // app.get("/user/save", (req, res) => {
 //   const newUser = [

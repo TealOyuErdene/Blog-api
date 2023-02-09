@@ -20,7 +20,7 @@ content-type: application/json
 }
 
 ###
-GET http://localhost:8000/articles
+GET http://localhost:8000/articles/bd356b2e-feba-47b6-86d5-de52d0980545
 
 ###
 POST http://localhost:8000/articles
