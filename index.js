@@ -117,10 +117,23 @@ app.get("/articles/:id", (req, res) => {
   } else {
     res.sendStatus(404);
   }
-  console.log(one);
 });
 
-app.get("/articles/:categoryId", (req, res) => {});
+app.get("/articles/category/:categoryId", (req, res) => {
+  const { categoryId } = req.params;
+  const articles = readArticles();
+
+  const filteredArticle = articles.filter(
+    (article) => article.categoryId === categoryId
+  );
+
+  if (filteredArticle) {
+    res.json(filteredArticle);
+    console.log("s");
+  } else {
+    res.sendStatus(404);
+  }
+});
 
 // app.get("/user/save", (req, res) => {
 //   const newUser = [
