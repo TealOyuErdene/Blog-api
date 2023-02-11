@@ -129,7 +129,6 @@ app.get("/articles/category/:categoryId", (req, res) => {
 
   if (filteredArticle) {
     res.json(filteredArticle);
-    console.log("s");
   } else {
     res.sendStatus(404);
   }
