@@ -134,6 +134,25 @@ app.get("/articles/category/:categoryId", (req, res) => {
   }
 });
 
+app.get("/articles", (req, res) => {
+  const { q } = req.query;
+  const articles = readArticles();
+  
+  if (q) {
+    const filteredList = articles.filter((article) =>
+      article.name.toLowerCase().includes(q.toLowerCase())
+    );
+    res.json(filteredList);
+  } else {
+    const page = articles.slice(0, 10)
+    res.json(page);
+  }
+});
+
+app.get("/articles/insertSampleData", (req, res)=> {
+   const articles = readArticles();
+})
+
 // app.get("/user/save", (req, res) => {
 //   const newUser = [
 //     {
