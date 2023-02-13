@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { v4 } = require("uuid");
 const fs = require("fs");
+const axios = require("axios");
 
 const port = 8000;
 const app = express();
@@ -32,7 +33,6 @@ app.get("/categories/:id", (req, res) => {
   const { id } = req.params;
   const categories = readCategories();
   const one = categories.find((category) => category.id === id);
-  console.log("one", id, categories);
   if (one) {
     res.json(one);
   } else {
@@ -85,8 +85,23 @@ function readArticles() {
 }
 
 app.get("/articles", (req, res) => {
+  const { q, page } = req.query;
   const articles = readArticles();
-  res.json(articles);
+
+  console.log({ q, page });
+
+  if (q) {
+    const filteredList = articles.filter((article) =>
+      article.name.toLowerCase().includes(q.toLowerCase())
+    );
+    res.json(filteredList);
+  } else {
+    const pageList = articles.slice((page - 1) * 10, page * 10);
+    res.json({
+      list: pageList,
+      count: articles.length,
+    });
+  }
 });
 
 app.post("/articles", (req, res) => {
@@ -102,7 +117,6 @@ app.post("/articles", (req, res) => {
   articles.unshift(newArticles);
   fs.writeFileSync("articles.json", JSON.stringify(articles));
   res.sendStatus(201);
-  console.log(articles.image);
 });
 
 app.get("/articles/:id", (req, res) => {
@@ -133,25 +147,6 @@ app.get("/articles/category/:categoryId", (req, res) => {
     res.sendStatus(404);
   }
 });
-
-app.get("/articles", (req, res) => {
-  const { q } = req.query;
-  const articles = readArticles();
-  
-  if (q) {
-    const filteredList = articles.filter((article) =>
-      article.name.toLowerCase().includes(q.toLowerCase())
-    );
-    res.json(filteredList);
-  } else {
-    const page = articles.slice(0, 10)
-    res.json(page);
-  }
-});
-
-app.get("/articles/insertSampleData", (req, res)=> {
-   const articles = readArticles();
-})
 
 // app.get("/user/save", (req, res) => {
 //   const newUser = [
