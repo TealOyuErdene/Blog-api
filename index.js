@@ -10,6 +10,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const user = {
+  username: "Oyu",
+  password: 12345678,
+};
+
+let userTokens = [];
+
+app.get("/login", (req, res) => {
+  const { username, password } = req.query;
+  if (user.username === username && user.password === password) {
+    const token = v4();
+    userTokens.push(token);
+    res.json({ token });
+  } else {
+    res.sendStatus(401);
+  }
+});
+
 function readCategories() {
   const content = fs.readFileSync("categories.json");
   const categories = JSON.parse(content);
@@ -17,7 +35,12 @@ function readCategories() {
 }
 
 app.get("/categories", (req, res) => {
-  const { q } = req.query;
+  const { q, token } = req.query;
+
+  if (!userTokens.includes(token)) {
+    res.sendStatus(401);
+    return;
+  }
   const categories = readCategories();
   if (q) {
     const filteredList = categories.filter((category) =>
@@ -96,7 +119,7 @@ app.get("/articles", (req, res) => {
     );
     res.json(filteredList);
   } else {
-    const pageList = articles.slice((page - 1) * 10, page * 10);
+    const pageList = articles.slice((page - 1) * 12, page * 12);
     res.json({
       list: pageList,
       count: articles.length,
@@ -143,6 +166,19 @@ app.get("/articles/category/:categoryId", (req, res) => {
 
   if (filteredArticle) {
     res.json(filteredArticle);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+app.delete("/articles/item/:id", (req, res) => {
+  const { id } = req.params;
+  const articles = readArticles();
+  const one = articles.find((article) => article.id === id);
+  if (one) {
+    const newList = articles.filter((article) => article.id !== id);
+    fs.writeFileSync("articles.json", JSON.stringify(newList));
+    res.json({ deletedId: id });
   } else {
     res.sendStatus(404);
   }
