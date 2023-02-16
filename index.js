@@ -43,10 +43,10 @@ function readCategories() {
 app.get("/categories", (req, res) => {
   const { q, token } = req.query;
 
-  if (!userTokens.includes(token)) {
-    res.sendStatus(401);
-    return;
-  }
+  // if (!userTokens.includes(token)) {
+  //   res.sendStatus(401);
+  //   return;
+  // }
   const categories = readCategories();
   if (q) {
     const filteredList = categories.filter((category) =>
