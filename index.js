@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { v4 } = require("uuid");
 const fs = require("fs");
-const axios = require("axios");
+const bcrypt = require("bcryptjs");
 
 const port = 8000;
 const app = express();
@@ -10,16 +10,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// const hash = bcrypt.hashSync("password123");
+// console.log({ hash });
+
 const user = {
-  username: "Oyu",
-  password: 12345678,
+  username: "Admin",
+  password: "$2a$10$.MNJ/ID5F61lGoOza.tozOPo3xgCoMf0SPENefP5xdJzltMvqxe8S",
 };
 
 let userTokens = [];
 
 app.get("/login", (req, res) => {
   const { username, password } = req.query;
-  if (user.username === username && user.password === password) {
+  if (
+    user.username === username &&
+    bcrypt.compareSync(password, user.password)
+  ) {
     const token = v4();
     userTokens.push(token);
     res.json({ token });
@@ -111,13 +117,15 @@ app.get("/articles", (req, res) => {
   const { q, page } = req.query;
   const articles = readArticles();
 
-  console.log({ q, page });
-
   if (q) {
     const filteredList = articles.filter((article) =>
-      article.name.toLowerCase().includes(q.toLowerCase())
+      article.title.toLowerCase().includes(q.toLowerCase())
     );
-    res.json(filteredList);
+    console.log(filteredList);
+    res.json({
+      list: filteredList,
+      count: filteredList.length,
+    });
   } else {
     const pageList = articles.slice((page - 1) * 12, page * 12);
     res.json({
