@@ -121,7 +121,6 @@ app.get("/articles", (req, res) => {
     const filteredList = articles.filter((article) =>
       article.title.toLowerCase().includes(q.toLowerCase())
     );
-    console.log(filteredList);
     res.json({
       list: filteredList,
       count: filteredList.length,
@@ -133,6 +132,10 @@ app.get("/articles", (req, res) => {
       count: articles.length,
     });
   }
+  res.json({
+    list: articles,
+    count: articles.length,
+  });
 });
 
 app.post("/articles", (req, res) => {
