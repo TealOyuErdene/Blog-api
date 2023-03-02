@@ -3,6 +3,7 @@ const cors = require("cors");
 const { v4 } = require("uuid");
 const fs = require("fs");
 const bcrypt = require("bcryptjs");
+const { connection } = require("./config/mysql");
 
 const port = 8000;
 const app = express();
@@ -10,12 +11,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// const hash = bcrypt.hashSync("password123");
-// console.log({ hash });
-
 const user = {
   username: "Admin",
   password: "$2a$10$.MNJ/ID5F61lGoOza.tozOPo3xgCoMf0SPENefP5xdJzltMvqxe8S",
+  //password123
 };
 
 let userTokens = [];
@@ -34,79 +33,59 @@ app.get("/login", (req, res) => {
   }
 });
 
-function readCategories() {
-  const content = fs.readFileSync("categories.json");
-  const categories = JSON.parse(content);
-  return categories;
-}
-
+//......Categories
 app.get("/categories", (req, res) => {
-  const { q, token } = req.query;
-
-  // if (!userTokens.includes(token)) {
-  //   res.sendStatus(401);
-  //   return;
-  // }
-  const categories = readCategories();
-  if (q) {
-    const filteredList = categories.filter((category) =>
-      category.name.toLowerCase().includes(q.toLowerCase())
-    );
-    res.json(filteredList);
-  } else {
-    res.json(categories);
-  }
+  connection.query(`select * from category`, function (err, results, fields) {
+    res.json(results);
+  });
 });
 
 app.get("/categories/:id", (req, res) => {
   const { id } = req.params;
-  const categories = readCategories();
-  const one = categories.find((category) => category.id === id);
-  if (one) {
-    res.json(one);
-  } else {
-    res.sendStatus(404);
-  }
+  connection.query(
+    `select * from category where id=?`,
+    [id],
+    function (err, results, fields) {
+      res.json(results[0]);
+    }
+  );
 });
 
 app.post("/categories", (req, res) => {
   const { name } = req.body;
-  const newCategory = { id: v4(), name: name };
-  const categories = readCategories();
-  categories.push(newCategory);
-  fs.writeFileSync("categories.json", JSON.stringify(categories));
-  res.sendStatus(201);
+  connection.query(
+    `insert into category values(?, ?)`,
+    [v4(), name],
+    function (err, results, fields) {
+      res.sendStatus(201);
+    }
+  );
 });
 
 app.delete("/categories/:id", (req, res) => {
   const { id } = req.params;
-  const categories = readCategories();
-  const one = categories.find((category) => category.id === id);
-  if (one) {
-    const newList = categories.filter((category) => category.id !== id);
-    fs.writeFileSync("categories.json", JSON.stringify(newList));
-    res.json({ deletedId: id });
-  } else {
-    res.sendStatus(404);
-  }
+  connection.query(
+    `delete from category where id=?`,
+    [id],
+    function (err, results, fields) {
+      res.json({ deletedId: id });
+    }
+  );
 });
 
 app.put("/categories/:id", (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
-  const categories = readCategories();
-  const index = categories.findIndex((category) => category.id === id);
-  if (index > -1) {
-    categories[index].name = name;
-    fs.writeFileSync("categories.json", JSON.stringify(categories));
-    res.json({ updateId: id });
-  } else {
-    res.sendStatus(404);
-  }
+  connection.query(
+    `update category set name=? where id=?`,
+    [name, id],
+    function (err, results, fields) {
+      res.json({ updatedId: id });
+    }
+  );
 });
 
-///......................................///
-
+//......Articles
 function readArticles() {
   const content = fs.readFileSync("articles.json");
   const articles = JSON.parse(content);
@@ -194,30 +173,6 @@ app.delete("/articles/item/:id", (req, res) => {
     res.sendStatus(404);
   }
 });
-
-// app.get("/user/save", (req, res) => {
-//   const newUser = [
-//     {
-//       name: "Sarnai",
-//       id: 1,
-//     },
-//   ];
-//   fs.writeFileSync("data.json", JSON.stringify(newUser));
-//   res.json(["success"]);
-// });
-
-// app.get("/user/read", (req, res) => {
-//   const content = fs.readFileSync("data.json");
-//   res.json(JSON.parse(content));
-// });
-
-// app.get("/user/update", (req, res) => {
-//   const content = fs.readFileSync("data.json");
-//   const users = JSON.parse(content);
-//   users.push({ name: "Bold", id: 2 });
-//   fs.writeFileSync("data.json", JSON.stringify(users));
-//   res.json({});
-// });
 
 app.listen(port, () => {
   console.log("App is listening at port", port);
