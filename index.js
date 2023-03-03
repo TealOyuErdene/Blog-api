@@ -34,6 +34,17 @@ app.get("/login", (req, res) => {
 });
 
 //......Categories
+// function readCategories() {
+//   const content = fs.readFileSync("categories.json");
+//   const categories = JSON.parse(content);
+//   return categories;
+// }
+
+function readCategories() {
+  connection.query(`select * from category`, function (err, results, fields) {
+    return results;
+  });
+}
 app.get("/categories", (req, res) => {
   connection.query(`select * from category`, function (err, results, fields) {
     res.json(results);
