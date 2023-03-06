@@ -34,6 +34,7 @@ app.get("/login", (req, res) => {
 });
 
 //......Categories
+
 // function readCategories() {
 //   const content = fs.readFileSync("categories.json");
 //   const categories = JSON.parse(content);
