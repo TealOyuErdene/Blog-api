@@ -44,3 +44,6 @@ select distinct customers.* from customers left join payments on customers.custo
 
 
 select sum(creditLimit) from customers;
+
+
+select orderNumber, sum(quantityOrdered) from orderdetails group by orderNumber order by sum(quantityOrdered) desc limit 1
