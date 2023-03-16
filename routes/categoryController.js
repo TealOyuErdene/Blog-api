@@ -1,63 +1,53 @@
 const express = require("express");
 const { v4 } = require("uuid");
-const { connection } = require("../config/mysql");
 const router = express.Router();
+const mongoose = require("mongoose");
 
-function readCategories() {
-  connection.query(`select * from category`, function (err, results, fields) {
-    return results;
-  });
-}
-
-router.get("/", (req, res) => {
-  connection.query(`select * from category`, function (err, results, fields) {
-    res.json(results);
-  });
+const categorySchema = new mongoose.Schema({
+  _id: String,
+  name: String,
 });
 
-router.get("/:id", (req, res) => {
+const Category = mongoose.model("Category", categorySchema);
+
+router.get("/", async (req, res) => {
+  const { q } = req.query;
+  const qregex = new RegExp(`${q}`, "i");
+  const list = await Category.find({ name: qregex }, "", { sort: { name: 1 } });
+  res.json(list);
+});
+
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  connection.query(
-    `select * from category where id=?`,
-    [id],
-    function (err, results, fields) {
-      res.json(results[0]);
-    }
-  );
+  const one = await Category.findById(id);
+  res.json(one);
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { name } = req.body;
-  connection.query(
-    `insert into category values(?, ?)`,
-    [v4(), name],
-    function (err, results, fields) {
-      res.sendStatus(201);
-    }
-  );
+  const newCategory = new Category({
+    _id: v4(),
+    name: name,
+  });
+
+  const result = await newCategory.save();
+  res.sendStatus(201);
 });
 
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
-  connection.query(
-    `delete from category where id=?`,
-    [id],
-    function (err, results, fields) {
-      res.json({ deletedId: id });
-    }
-  );
+  Category.deleteOne({ _id: id }).then(() => {
+    res.json({ deleted: id });
+  });
 });
 
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
-  connection.query(
-    `update category set name=? where id=?`,
-    [name, id],
-    function (err, results, fields) {
-      res.json({ updatedId: id });
-    }
-  );
+
+  Category.updateOne({ _id: id }, { name }).then(() => {
+    res.json({ updatedId: id });
+  });
 });
 
 module.exports = {

@@ -1,13 +1,22 @@
 const express = require("express");
 const cors = require("cors");
 const { v4 } = require("uuid");
-const fs = require("fs");
 const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
 const { categoryRouter } = require("./routes/categoryController");
+const { articleRouter } = require("./routes/articleController");
+
 const port = 8000;
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+
+mongoose
+  .connect(
+    "mongodb+srv://OyuErdene:tK5CntxmvG3iuBXk@cluster0.u09hg9h.mongodb.net/blog"
+  )
+  .then(() => console.log("Connected!"));
 
 // const hash = bcrypt.hashSync("password123");
 // console.log({ hash });
@@ -33,90 +42,7 @@ app.get("/login", (req, res) => {
 });
 
 app.use("/categories", categoryRouter);
-
-function readArticles() {
-  const content = fs.readFileSync("articles.json");
-  const articles = JSON.parse(content);
-  return articles;
-}
-
-app.get("/articles", (req, res) => {
-  const { q, page } = req.query;
-  const articles = readArticles();
-  if (q) {
-    const filteredList = articles.filter((article) =>
-      article.title.toLowerCase().includes(q.toLowerCase())
-    );
-    res.json({
-      list: filteredList,
-      count: filteredList.length,
-    });
-  } else {
-    const pageList = articles.slice((page - 1) * 12, page * 12);
-    res.json({
-      list: pageList,
-      count: articles.length,
-    });
-  }
-  res.json({
-    list: articles,
-    count: articles.length,
-  });
-});
-
-app.post("/articles", (req, res) => {
-  const { title, categoryId, text, image } = req.body;
-  const newArticles = {
-    id: v4(),
-    title: title,
-    text: text,
-    categoryId: categoryId,
-    image: image,
-  };
-  const articles = readArticles();
-  articles.unshift(newArticles);
-  fs.writeFileSync("articles.json", JSON.stringify(articles));
-  res.sendStatus(201);
-});
-
-app.get("/articles/:id", (req, res) => {
-  const { id } = req.params;
-  const articles = readArticles();
-  const one = articles.find((article) => article.id === id);
-  const categories = readCategories();
-  let category = categories.find((category) => category.id === one.categoryId);
-  one.category = category;
-  if (one) {
-    res.json(one);
-  } else {
-    res.sendStatus(404);
-  }
-});
-
-app.get("/articles/category/:categoryId", (req, res) => {
-  const { categoryId } = req.params;
-  const articles = readArticles();
-  const filteredArticle = articles.filter(
-    (article) => article.categoryId === categoryId
-  );
-  if (filteredArticle) {
-    res.json(filteredArticle);
-  } else {
-    res.sendStatus(404);
-  }
-});
-app.delete("/articles/item/:id", (req, res) => {
-  const { id } = req.params;
-  const articles = readArticles();
-  const one = articles.find((article) => article.id === id);
-  if (one) {
-    const newList = articles.filter((article) => article.id !== id);
-    fs.writeFileSync("articles.json", JSON.stringify(newList));
-    res.json({ deletedId: id });
-  } else {
-    res.sendStatus(404);
-  }
-});
+app.use("/articles", articleRouter);
 
 app.listen(port, () => {
   console.log("App is listening at port", port);
