@@ -1,10 +1,19 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { v4: uuid } = require("uuid");
-const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
+const multer = require("multer");
 const { categoryRouter } = require("./routes/categoryController");
 const { articleRouter } = require("./routes/articleController");
+const cloudinary = require("cloudinary");
+const { userRouter } = require("./routes/userController");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const port = 8000;
 const app = express();
@@ -12,37 +21,44 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose
-  .connect(
-    "mongodb+srv://OyuErdene:tK5CntxmvG3iuBXk@cluster0.u09hg9h.mongodb.net/blog"
-  )
-  .then(() => console.log("Connected!"));
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/tmp/");
+  },
 
-// const hash = bcrypt.hashSync("password123");
-// console.log({ hash });
-const user = {
-  username: "admin",
-  password: "$2a$10$.MNJ/ID5F61lGoOza.tozOPo3xgCoMf0SPENefP5xdJzltMvqxe8S",
-};
-
-let userTokens = [];
-
-app.get("/login", (req, res) => {
-  const { username, password } = req.query;
-  if (
-    user.username === username &&
-    bcrypt.compareSync(password, user.password)
-  ) {
-    const token = uuid();
-    userTokens.push(token);
-    res.json({ token });
-  } else {
-    res.sendStatus(401);
-  }
+  filename: function (req, file, cb) {
+    const extension = file.originalname.split(".").pop();
+    cb(null, `${uuid()}.${extension}`);
+  },
 });
+
+const upload = multer({
+  storage: storage,
+});
+
+app.use("/uploads", express.static("uploads"));
+
+app.post(
+  "/upload-image",
+  upload.single("image"),
+  async function (req, res, next) {
+    const cloudinaryImage = await cloudinary.v2.uploader.upload(req.file.path);
+
+    return res.json({
+      path: cloudinaryImage.secure_url,
+      width: cloudinaryImage.width,
+      height: cloudinaryImage.height,
+    });
+  }
+);
+
+mongoose
+  .connect(process.env.MONGODB_STRING)
+  .then(() => console.log("Connected!"));
 
 app.use("/categories", categoryRouter);
 app.use("/articles", articleRouter);
+app.use("/users", userRouter);
 
 app.listen(port, () => {
   console.log("App is listening at port", port);

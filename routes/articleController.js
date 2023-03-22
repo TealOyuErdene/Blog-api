@@ -1,79 +1,59 @@
 const express = require("express");
-const fs = require("fs");
 const { v4: uuid } = require("uuid");
-const { connection } = require("../config/mysql");
 const router = express.Router();
+const mongoose = require("mongoose");
 
-// function readArticles() {
-//   const content = fs.readFileSync("articles.json");
-//   const articles = JSON.parse(content);
-//   return articles;
-// }
-
-router.get("/", (req, res) => {
-  connection.query(
-    `SELECT article.id, title, category.name FROM article left join category on article.category_id=category.id`,
-    function (err, results, fields) {
-      res.json({
-        list: results,
-        count: 10,
-      });
-    }
-  );
+const articleSchema = new mongoose.Schema({
+  _id: { type: String, default: () => uuid() },
+  title: String,
+  text: String,
+  categoryId: { type: String, ref: "Category" },
+  image: {
+    path: String,
+    width: Number,
+    height: Number,
+  },
 });
 
-router.get("/:id", (req, res) => {
+const Article = mongoose.model("Article", articleSchema);
+
+router.get("/", async (req, res) => {
+  const list = await Article.find({}).populate("categoryId");
+
+  res.json({
+    list: list,
+    count: 10,
+  });
+});
+
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  connection.query(
-    `SELECT * FROM article where id=?`,
-    [id],
-    function (err, results, fields) {
-      res.json(results[0]);
-    }
-  );
+  const one = await Article.findById(id);
+  res.json(one);
 });
 
-router.post("/", (req, res) => {
-  const { title, text, categoryId } = req.body;
-  const newArticle = {
-    id: uuid(),
+router.post("/", async (req, res) => {
+  const { title, text, categoryId, image } = req.body;
+  await Article.create({
     title,
     text,
     category_id: categoryId,
-  };
+    image,
+  });
 
-  console.log(newArticle);
-
-  connection.query(
-    `insert into article values (?,?,?,?)`,
-    [newArticle.id, newArticle.title, newArticle.text, newArticle.category_id],
-    function (err, results, fields) {
-      res.sendStatus(201);
-    }
-  );
+  res.sendStatus(201);
 });
 
-router.get("/category/:categoryId", (req, res) => {
+router.get("/category/:categoryId", async (req, res) => {
   const { categoryId } = req.params;
-
-  const filteredArticle = connection.query(
-    `SELECT * FROM article where categoryId=?`,
-    [categoryId],
-    function (err, results, fields) {
-      res.json(filteredArticle);
-    }
-  );
+  const filteredArticle = await Article.find({ categoryId: categoryId });
+  res.json(filteredArticle);
 });
 
-router.delete("/item/:id", (req, res) => {
+router.delete("/item/:id", async (req, res) => {
   const { id } = req.params;
-  connection.query(
-    `DELETE FROM article where id=?`,
-    [id],
-    function (err, results, fields) {
-      res.json({ deletedId: id });
-    }
-  );
+  await Article.deleteOne({ _id: id });
+  res.json({ DeletedId: id });
 });
 
 module.exports = {
