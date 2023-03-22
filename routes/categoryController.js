@@ -1,5 +1,5 @@
 const express = require("express");
-const { v4 } = require("uuid");
+const { v4: uuid } = require("uuid");
 const router = express.Router();
 const mongoose = require("mongoose");
 
@@ -12,7 +12,7 @@ const Category = mongoose.model("Category", categorySchema);
 
 router.get("/", async (req, res) => {
   const { q } = req.query;
-  const qregex = new RegExp(`${q}`, "i");
+  const qregex = q ? new RegExp(`${q}`, "i") : RegExp(``, "i");
   const list = await Category.find({ name: qregex }, "", { sort: { name: 1 } });
   res.json(list);
 });
@@ -26,7 +26,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   const { name } = req.body;
   const newCategory = new Category({
-    _id: v4(),
+    _id: uuid(),
     name: name,
   });
 

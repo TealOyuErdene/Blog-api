@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { v4 } = require("uuid");
+const { v4: uuid } = require("uuid");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { categoryRouter } = require("./routes/categoryController");
@@ -33,7 +33,7 @@ app.get("/login", (req, res) => {
     user.username === username &&
     bcrypt.compareSync(password, user.password)
   ) {
-    const token = v4();
+    const token = uuid();
     userTokens.push(token);
     res.json({ token });
   } else {
