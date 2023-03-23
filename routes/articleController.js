@@ -18,7 +18,8 @@ const articleSchema = new mongoose.Schema({
 const Article = mongoose.model("Article", articleSchema);
 
 router.get("/", async (req, res) => {
-  const list = await Article.find({}).populate("categoryId");
+  const list = await Article.find().populate("categoryId");
+  // console.log(list);
 
   res.json({
     list: list,
@@ -46,8 +47,12 @@ router.post("/", async (req, res) => {
 
 router.get("/category/:categoryId", async (req, res) => {
   const { categoryId } = req.params;
-  const filteredArticle = await Article.find({ categoryId: categoryId });
+  // console.log(categoryId);
+  const filteredArticle = await Article.find({
+    categoryId: categoryId,
+  }).populate("categoryId");
   res.json(filteredArticle);
+  // console.log(filteredArticle);
 });
 
 router.delete("/item/:id", async (req, res) => {
