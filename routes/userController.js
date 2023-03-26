@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const { v4: uuid } = require("uuid");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 
 const User = mongoose.model("User", {
   _id: { type: String, default: () => uuid() },
@@ -46,7 +47,8 @@ router.post("/login", async (req, res) => {
   if (one) {
     const auth = bcrypt.compareSync(password, one.password);
     if (auth) {
-      res.json({ token: uuid() });
+      const token = jwt.sign({ userId: one._id }, "XZv01Mp1");
+      res.json({ token: token });
     } else {
       res.sendStatus(400).json({ message: "Буруу байна" });
     }
