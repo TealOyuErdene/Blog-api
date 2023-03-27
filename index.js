@@ -8,6 +8,7 @@ const { categoryRouter } = require("./routes/categoryController");
 const { articleRouter } = require("./routes/articleController");
 const cloudinary = require("cloudinary");
 const { userRouter } = require("./routes/userController");
+const { checkAuth } = require("./middlewares/checkAuth");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -56,8 +57,8 @@ mongoose
   .connect(process.env.MONGODB_STRING)
   .then(() => console.log("Connected!"));
 
-app.use("/categories", categoryRouter);
-app.use("/articles", articleRouter);
+app.use("/categories", checkAuth, categoryRouter);
+app.use("/articles", checkAuth, articleRouter);
 app.use("/users", userRouter);
 
 app.listen(port, () => {
