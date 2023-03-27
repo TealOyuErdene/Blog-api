@@ -13,11 +13,11 @@ const Category = mongoose.model("Category", categorySchema);
 
 router.get("/", async (req, res) => {
   const token = req.headers.authorization;
-  jwt.verify(token, "XZv01Mp1", async function (err, decoded) {
+  jwt.verify(token, process.env.JWT_SECRET_KEY, async function (err, decoded) {
     if (err) {
       res.sendStatus(401);
     } else {
-      var decoded = jwt.verify(token, "XZv01Mp1");
+      var decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
       const { q } = req.query;
       const qregex = q ? new RegExp(`${q}`, "i") : RegExp(``, "i");
       const list = await Category.find({ name: qregex }, "", {

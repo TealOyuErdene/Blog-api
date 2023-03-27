@@ -41,19 +41,19 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const [username, password] = req.body;
+  const { username, password } = req.body;
   const one = await User.findOne({ username });
 
   if (one) {
     const auth = bcrypt.compareSync(password, one.password);
     if (auth) {
-      const token = jwt.sign({ userId: one._id }, "XZv01Mp1");
+      const token = jwt.sign({ userId: one._id }, process.env.JWT_SECRET_KEY);
       res.json({ token: token });
     } else {
-      res.sendStatus(400).json({ message: "Буруу байна" });
+      res.status(400).json({ message: "Буруу байна" });
     }
   } else {
-    res.sendStatus(400).json({ message: "Буруу байна" });
+    res.status(400).json({ message: "Буруу байна" });
   }
 });
 
