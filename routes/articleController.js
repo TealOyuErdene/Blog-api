@@ -18,8 +18,8 @@ const articleSchema = new mongoose.Schema({
 const Article = mongoose.model("Article", articleSchema);
 
 router.get("/", async (req, res) => {
-  const list = await Article.find().populate("categoryId");
-  // console.log(list)
+  const list = await Article.find({}).populate("categoryId");
+  console.log(list);
 
   res.json({
     list: list,
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
   await Article.create({
     title,
     text,
-    category_id: categoryId,
+    categoryId,
     image,
   });
 

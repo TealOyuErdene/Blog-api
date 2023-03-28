@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
     sort: { name: 1 },
   });
   res.json(list);
+  console.log(list);
 });
 
 router.get("/:id", async (req, res) => {
