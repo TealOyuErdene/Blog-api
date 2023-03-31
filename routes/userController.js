@@ -13,6 +13,7 @@ const User = mongoose.model("User", {
     unique: [true, "Ийм нэртэй хэрэглэгч бүртгэгдсэн байна"],
   },
   password: { type: String, required: [true, "Нууц үгээ оруулна уу"] },
+  role: { type: String, enum: ["admin", "client", "guest"], default: "guest" },
 });
 
 router.post("/register", async (req, res) => {
@@ -36,7 +37,7 @@ router.post("/register", async (req, res) => {
     const result = await newUser.save();
     res.sendStatus(201);
   } catch (e) {
-    res.sendStatus(400).json(e);
+    res.status(400).json(e);
   }
 });
 
@@ -59,4 +60,5 @@ router.post("/login", async (req, res) => {
 
 module.exports = {
   userRouter: router,
+  User: User,
 };

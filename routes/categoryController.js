@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const categorySchema = new mongoose.Schema({
   _id: String,
   name: String,
+  count: { type: Number, default: 0 },
 });
 
 const Category = mongoose.model("Category", categorySchema);
@@ -54,4 +55,5 @@ router.put("/:id", (req, res) => {
 
 module.exports = {
   categoryRouter: router,
+  Category: Category,
 };
